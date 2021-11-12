@@ -47,7 +47,7 @@ public class MyDataBaseHelper extends SQLiteOpenHelper {
             Toast.makeText(context, "failed to inert", Toast.LENGTH_SHORT).show();
             return false;
         } else {
-            Toast.makeText(context, "success inserted", Toast.LENGTH_SHORT).show();
+            Toast.makeText(context, "success inserted ", Toast.LENGTH_SHORT).show();
             return true;
         }
     }
@@ -61,6 +61,17 @@ public class MyDataBaseHelper extends SQLiteOpenHelper {
 
         }
         return res;
+    }
+    public int getLastInertedId(){
+        Integer id=null;
+        SQLiteDatabase db = this.getWritableDatabase();
+        Cursor cursor = db.rawQuery("SELECT  * FROM " + TABLE_NAME, null);
+
+        if(cursor.moveToLast()){
+            //name = cursor.getString(column_index);//to get other values
+            id = cursor.getInt(0);//to get id, 0 is the column index
+        }
+        return id;
     }
 
     public void updateData(String id, String readUnread) {

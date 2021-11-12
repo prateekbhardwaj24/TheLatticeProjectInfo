@@ -1,4 +1,4 @@
-package com.example.thelatticeproject;
+ package com.example.thelatticeproject;
 
 import android.content.res.ColorStateList;
 import android.database.Cursor;
@@ -28,7 +28,6 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 
-import com.example.thelatticeproject.TaskAdapter.ListAdapter;
 import com.example.thelatticeproject.TaskAdapter.taskAdapter;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.textfield.TextInputLayout;
@@ -44,16 +43,12 @@ public class MainActivity extends AppCompatActivity {
     FloatingActionButton AddFloatBtn;
     ColorStateList csl;
     RecyclerView recyclerView;
-    ArrayList<String> mainRvArrayList, task_id, task_title, task_status;
+   // ArrayList<String> mainRvArrayList, task_id, task_title, task_status;
     TextInputLayout addTaskTextField;
     Button addTaskButton;
     LinearLayout addTaskLayout;
     Boolean taskLayout = false;
-    String userInput, readUnread;
     taskAdapter taskAdapter;
-    // dataBaseHelper myDb;
-    // dbdb db;
-    //  ListAdapter listAdapter;
     ArrayList<DataModal> courseModalArrayList;
 
     @Override
@@ -61,6 +56,7 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         getSupportActionBar().hide();
+
         //getting all buttons ids
         AddFloatBtn = findViewById(R.id.addFloatingBtn);
         recyclerView = findViewById(R.id.mainRv);
@@ -74,10 +70,10 @@ public class MainActivity extends AppCompatActivity {
         ImageViewCompat.setImageTintList(AddFloatBtn, csl);
 
         // initializing arrayList for recyclerview
-        mainRvArrayList = new ArrayList<>();
-        task_id = new ArrayList<>();
-        task_title = new ArrayList<>();
-        task_status = new ArrayList<>();
+        // mainRvArrayList = new ArrayList<>();
+//        task_id = new ArrayList<>();
+//        task_title = new ArrayList<>();
+//        task_status = new ArrayList<>();
         courseModalArrayList = new ArrayList<>();
 
 
@@ -128,8 +124,8 @@ public class MainActivity extends AppCompatActivity {
                 myDataBaseHelper.deleteData(dataModal.getId());
 
                 courseModalArrayList.remove(position);
-//                courseModalArrayList.remove(dataModal);
-                taskAdapter.notifyDataSetChanged();
+                taskAdapter.notifyItemRemoved(position);
+
 
             }
 
@@ -179,26 +175,38 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void InsertDataToDb() {
-        //dataBaseHelper dataBaseHelper = new dataBaseHelper(this);
+
         MyDataBaseHelper myDataBaseHelper = new MyDataBaseHelper(MainActivity.this);
 
         String luserInput = addTaskTextField.getEditText().getText().toString();
         String lreadUnread = "Unread";
 
+
         boolean result = myDataBaseHelper.adddata(luserInput, lreadUnread);
-        if (result == true) {
+
+        if (courseModalArrayList.isEmpty()) {
             addTaskLayout.setVisibility(View.GONE);
-
-            DataModal dataModal = new DataModal();
-            dataModal.setHold(false);
-            dataModal.setTitle(luserInput);
-            dataModal.setReadNread(lreadUnread);
-            dataModal.setHold(false);
+            displayData();
+        } else {
 
 
-            courseModalArrayList.add(0, dataModal);
-            taskAdapter.notifyItemInserted(0);
+            if (result == true) {
+                Integer lastId = myDataBaseHelper.getLastInertedId();
 
+                addTaskLayout.setVisibility(View.GONE);
+                //get the id of inserted item
+
+                DataModal dataModal = new DataModal();
+                dataModal.setId(String.valueOf(lastId));
+                dataModal.setTitle(luserInput);
+                dataModal.setReadNread(lreadUnread);
+                dataModal.setHold(false);
+
+
+                courseModalArrayList.add(0, dataModal);
+                taskAdapter.notifyItemInserted(0);
+
+            }
         }
 
     }
@@ -227,13 +235,14 @@ public class MainActivity extends AppCompatActivity {
                 }
                 courseModalArrayList.add(dataModal);
 
-                recyclerView.setLayoutManager(new LinearLayoutManager(this));
 
-                taskAdapter = new taskAdapter(this, courseModalArrayList);
-                Collections.reverse(courseModalArrayList);
-                recyclerView.setAdapter(taskAdapter);
 
             }
+            recyclerView.setLayoutManager(new LinearLayoutManager(this));
+            taskAdapter = new taskAdapter(this, courseModalArrayList);
+            Collections.reverse(courseModalArrayList);
+            recyclerView.setAdapter(taskAdapter);
+
 
         }
     }
@@ -247,8 +256,9 @@ public class MainActivity extends AppCompatActivity {
         }
         return result;
     }
+
     private void hideKeybaord(View v) {
-        InputMethodManager inputMethodManager = (InputMethodManager)getSystemService(INPUT_METHOD_SERVICE);
-        inputMethodManager.hideSoftInputFromWindow(v.getApplicationWindowToken(),0);
+        InputMethodManager inputMethodManager = (InputMethodManager) getSystemService(INPUT_METHOD_SERVICE);
+        inputMethodManager.hideSoftInputFromWindow(v.getApplicationWindowToken(), 0);
     }
 }
